@@ -56,38 +56,47 @@ void drawDisplayLine(unsigned int& y_pos, const char* label, const char* state =
 }
 
 void Display::menu() {
-  activeMenu = true;
   displaySensor.clearBuffer();
-
+  
   unsigned int line_y = 0;
-
+  
   switch (currentPage)
   {
     case CONTROL_PAGE: {
       const char* tapoState = getEntityState(Entity::tapo_0);
       const char* roborockState = getEntityState(Entity::roborock);
       
-      drawDisplayLine(line_y, "PAGINA CONTROL", "");
+      drawDisplayLine(line_y, "PAGINA CONTROL");
       drawDisplayLine(line_y, "1.Priza:", tapoState);
       drawDisplayLine(line_y, "2.Aspirator:", roborockState);
       break;
     }
+    case ROBOROCK_PAGE: {     
+      drawDisplayLine(line_y, "1.Cleaning");
+      drawDisplayLine(line_y, "2.Docking");
+      drawDisplayLine(line_y, "3.Pause");
+      drawDisplayLine(line_y, " ");
+      drawDisplayLine(line_y, "4.Cancel");
+      break;
+    }
     case FORECAST_PAGE: {
-      drawDisplayLine(line_y, "VREMEA AFARA", "");
+      drawDisplayLine(line_y, "VREMEA AFARA");
       drawDisplayLine(line_y, "1.Vreme:", getEntityState(Entity::weather_temp));
       drawDisplayLine(line_y, "2.Humidity:", getEntityState(Entity::weather_hum));
       break;
     }
     case ROOM_PAGE: {
-      drawDisplayLine(line_y, "STARE CAMERA", "");
+      drawDisplayLine(line_y, "STARE CAMERA");
       drawDisplayLine(line_y, "1.Temperatura:", roomTemp);
       drawDisplayLine(line_y, "2.Humiditate:", roomHum);
       break;
     }
     default:
-      break;
+    break;
   }
-
+  
+  activeMenu = true;
+  displayStartTime = millis();
   lastDisplayTime = millis();
   displaySensor.sendBuffer();
 }
@@ -99,16 +108,15 @@ void Display::manageDisplayState() {
     currentDuration = defaultDuration;
     lastDisplayTime = millis();
   }
-
-  if (millis() - lastDisplayTime > timeoutDisplay) {
+  
+  if (activeMenu && millis() - lastDisplayTime > timeoutDisplay) {
     activeMenu = false;
     displaySensor.clearBuffer();
     displaySensor.sendBuffer();
   }
-
-  if(activeMQTT && needsDisplayMenuUpdate && !showingTemporary) {
+  
+  if(!activeMQTT && needsDisplayMenuUpdate && !showingTemporary) {
     display.menu();
-    activeMQTT = false;
     needsDisplayMenuUpdate = false;
   }
 }

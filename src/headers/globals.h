@@ -8,6 +8,7 @@
 
 enum MenuPage {
   CONTROL_PAGE,
+  ROBOROCK_PAGE,
   FORECAST_PAGE,
   ROOM_PAGE
 };

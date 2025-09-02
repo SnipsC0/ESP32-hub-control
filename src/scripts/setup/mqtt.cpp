@@ -38,23 +38,18 @@ void callback(char* topic, byte* payload, unsigned int length) {
         // Iteram prin toate entitatile pentru a le actualiza starea
         for (const auto& [entity, config] : entityConfigs) {
             if (strcmp(topic, config.topic) == 0) {
-                // Corectare avertisment: utilizare is<JsonVariant>()
                 if (doc[config.json_key].is<JsonVariant>()) {
                     std::string state_value = doc[config.json_key].as<std::string>();
-                    Serial.println(state_value.c_str());
-                    
+                    // Serial.println(state_value.c_str());
+                    Serial.println("Ajuns");
                     updateEntityState(entity, state_value.c_str());
-                    
+                
                     handleSpecialCases(entity, state_value.c_str());
+                    activeMQTT = false;
+                    needsDisplayMenuUpdate = true;
                 }
             }
         }
-
-        // Serial.println(topic);
-        // Serial.println(payload_str);
-        activeMQTT = true;
-        needsDisplayMenuUpdate = true;
-        showingTemporary = false;
     }
 }
 
@@ -95,8 +90,7 @@ void Mqtt::loop() {
 }
 
 void Mqtt::publish(const char* topic, const char* payload) {
-    display.displayString("...");
-    showingTemporary = true;
+    display.displayString("...", 1, 2);
     mqtt.publish(topic, payload);
 
     activeMQTT = true;

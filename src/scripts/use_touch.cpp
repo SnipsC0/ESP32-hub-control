@@ -1,4 +1,4 @@
-// #define USE_SIMULATION
+#define USE_SIMULATION
 
 #include <Arduino.h>
 #include "headers/led_control.h"
