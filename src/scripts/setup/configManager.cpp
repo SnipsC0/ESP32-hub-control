@@ -28,6 +28,19 @@ bool ConfigManager::parseConfig(const char* json) {
             newLine.electrode = lineObj["electrode"].as<uint8_t>();
             newLine.label = lineObj["label"].as<String>();
             newLine.type = lineObj["type"].as<String>();
+            if (!lineObj["showState"].isNull()) {
+                if (lineObj["showState"].is<bool>()) {
+                    newLine.showState = lineObj["showState"].as<bool>();
+                } 
+                else if (lineObj["showState"].is<const char*>() && strcmp(lineObj["showState"], "false") == 0) {
+                    newLine.showState = false;
+                }
+                else {
+                    newLine.showState = true;
+                }
+            } else {
+                newLine.showState = true;
+            }
             
             if (!lineObj["topic"].isNull()) newLine.topic = lineObj["topic"].as<String>();
             if (!lineObj["payload"].isNull()) newLine.payload = lineObj["payload"].as<String>();
@@ -35,7 +48,8 @@ bool ConfigManager::parseConfig(const char* json) {
             if (!lineObj["forbiddenState"].isNull()) newLine.forbiddenState = lineObj["forbiddenState"].as<String>();
             if (!lineObj["nextPage"].isNull()) newLine.nextPage = lineObj["nextPage"].as<String>();
             if (!lineObj["variable"].isNull()) newLine.variable = lineObj["variable"].as<String>();
-            
+
+
             newPage.lines.push_back(newLine);
         }
         pages.push_back(newPage);

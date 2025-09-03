@@ -27,4 +27,7 @@ extern char heatIndex[10];
 extern char mqtt_server[40];
 extern char mqtt_port[6];
 
+extern unsigned long displayUpdateRaceStartTime;
+extern bool isDisplayUpdateRaceActive;
+
 #endif

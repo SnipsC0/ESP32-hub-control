@@ -16,4 +16,7 @@ char heatIndex[10];
 char mqtt_server[40] = "192.168.0.240";
 char mqtt_port[6] = "1883";
 
+unsigned long displayUpdateRaceStartTime = 0;
+bool isDisplayUpdateRaceActive = false;
+
 unsigned long lastTouchTime = 0;

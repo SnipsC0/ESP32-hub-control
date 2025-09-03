@@ -25,7 +25,7 @@ void handleTouch(uint8_t electrode) {
         String currentState = getEntityState(action->entity.c_str());
         
         if (!action->forbiddenState.isEmpty() && currentState == action->forbiddenState) {
-            return; // Nu face nimic
+            return;
         }
 
         String payload = action->payload;
@@ -38,6 +38,11 @@ void handleTouch(uint8_t electrode) {
         }
         
         mqttClient.publish(action->topic.c_str(), payload.c_str());
+    } else if(action->type == "RESTART") {
+      unsigned int line_y = 0;
+      display.updateScreen(line_y, true, "Repornire...", "");
+      delay(2000);
+      ESP.restart();
     }
   }
 }

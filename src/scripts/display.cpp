@@ -27,7 +27,7 @@ void Display::init() {
 
   lastDisplayTime = millis();
   displaySensor.begin();
-  displaySensor.setFont(u8g2_font_6x13_tf);
+  displaySensor.setFont(u8g2_font_resoledbold_tr);
   displaySensor.setFontPosTop();
   displaySensor.drawStr(0,10, "Se initializeaza...");
   displaySensor.sendBuffer();
@@ -67,13 +67,18 @@ void Display::menu() {
 
     for (const auto& line : page->lines) {
         String stateStr = "";
-        if (!line.entity.isEmpty()) {
-            stateStr = getEntityState(line.entity.c_str());
+        if (line.showState && !line.entity.isEmpty()) {
+            String currentState = getEntityState(line.entity.c_str());
+            if (currentState != "N/A" && !currentState.isEmpty()) {
+                stateStr = " " + currentState;
+            }
         } 
         else if (line.variable == "roomTemp") {
             stateStr = roomTemp;
         } else if (line.variable == "roomHum") {
             stateStr = roomHum;
+        } else if (line.variable == "heatIndex") {
+            stateStr = heatIndex;
         }
         
         drawDisplayLine(line_y, line.label.c_str(), stateStr.c_str());
@@ -89,6 +94,7 @@ void Display::menu() {
   };
   displaySensor.sendBuffer();
 }
+
 
 
 void Display::manageDisplayState() {
@@ -109,4 +115,5 @@ void Display::manageDisplayState() {
     display.menu();
     needsDisplayMenuUpdate = false;
   }
+
 }

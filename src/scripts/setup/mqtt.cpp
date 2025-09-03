@@ -100,7 +100,7 @@ void Mqtt::setup() {
     int mqtt_port_int = atoi(mqtt_port);
 
     mqtt.setServer(mqtt_server, mqtt_port_int);
-    mqtt.setBufferSize(2048);
+    mqtt.setBufferSize(4000);
     mqtt.setCallback(callback);
     delay(1000);
 }
@@ -109,6 +109,16 @@ void Mqtt::loop() {
     if (!mqtt.connected()) {
         mqttClient.reconnect();
     }
+    
+    if (isDisplayUpdateRaceActive) { 
+        if (!needsDisplayMenuUpdate) {
+            isDisplayUpdateRaceActive = false;
+        } else if (millis() - displayUpdateRaceStartTime > (RACE_MQTT_TOUCH_COOLDOWN_S * 1000)) {
+            needsDisplayMenuUpdate = false;
+            isDisplayUpdateRaceActive = false;
+        }
+    }
+
     mqtt.loop();
 }
 
@@ -118,4 +128,7 @@ void Mqtt::publish(const char* topic, const char* payload) {
 
     activeMQTT = true;
     needsDisplayMenuUpdate = true;
+
+    isDisplayUpdateRaceActive = true;
+    displayUpdateRaceStartTime = millis();
 }

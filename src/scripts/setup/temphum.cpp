@@ -24,7 +24,6 @@ void TempHumSensor::check(){
     float temperature = dht.readTemperature();
 
     if (isnan(humidity) || isnan(temperature)) {
-      Serial.println("Eroare la citirea de la senzorul DHT!");
       return;
     }
     

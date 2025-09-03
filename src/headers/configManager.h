@@ -16,6 +16,7 @@ struct ActionLine {
     String forbiddenState;
     String nextPage;
     String variable; // pentru variabile locale precum roomTemp
+    bool showState;
 };
 
 struct Page {
