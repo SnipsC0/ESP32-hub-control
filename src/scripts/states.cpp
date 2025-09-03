@@ -2,7 +2,6 @@
 #include <string>
 #include <map>
 
-// Harta de stări. Cheia este numele entității (ex: "tapo_0")
 std::map<std::string, std::string> states;
 
 void updateEntityState(const char* entityName, const char* newState) {

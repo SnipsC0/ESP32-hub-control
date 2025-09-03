@@ -32,7 +32,7 @@ void MPR121_Touch::setupMPR121() {
 
         wire->beginTransmission(MPR121_ADDR);
         wire->write(0x51 + i);
-        wire->write(15);   // Release threshold (jumătate din touch)
+        wire->write(15);
         wire->endTransmission();
     }
     
@@ -44,7 +44,6 @@ void MPR121_Touch::setupMPR121() {
 }
 
 void MPR121_Touch::begin() {
-    // Configurează interrupt
     initWireMPR121();
     
     TwoWire* wire = getWireMPR121();
@@ -53,12 +52,10 @@ void MPR121_Touch::begin() {
     pinMode(MPR_PIN_IRQ, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(MPR_PIN_IRQ), handleDeepTouch, FALLING);
     
-    // Configurează wake-up pentru deep sleep
     esp_sleep_enable_ext0_wakeup((gpio_num_t)MPR_PIN_IRQ, 0);
     
     setupMPR121();
     
-    // Verifică dacă s-a trezit din deep sleep
     if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT0) {
         Serial.println("S-a trezit din deep sleep!");
     }

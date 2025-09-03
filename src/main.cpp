@@ -12,10 +12,11 @@
 
 void setup() {
   Serial.begin(115200);
+  randomSeed(analogRead(0));
   
   display.init();
   setup_touch();
-
+  
   wifi.setup();
   mqttClient.setup();
   tempHumSensor.setup();

@@ -14,11 +14,9 @@ void handleTouch(uint8_t electrode) {
     return;
   }
 
-  // Caută acțiunea corespunzătoare electrodului apăsat pe pagina curentă
   const ActionLine* action = configManager.getAction(currentPage, electrode);
 
   if (action) {
-    // Verifică tipul acțiunii
     if (action->type == "CHANGE_PAGE") {
         currentPage = action->nextPage;
         display.menu();
@@ -26,13 +24,11 @@ void handleTouch(uint8_t electrode) {
     else if (action->type == "MQTT") {
         String currentState = getEntityState(action->entity.c_str());
         
-        // Verifică dacă acțiunea este interzisă de starea curentă
         if (!action->forbiddenState.isEmpty() && currentState == action->forbiddenState) {
             return; // Nu face nimic
         }
 
         String payload = action->payload;
-        // Gestionează cazul special "TOGGLE"
         if (action->payload == "TOGGLE") {
             if (currentState == "ON") {
                 payload = "OFF";
@@ -43,6 +39,5 @@ void handleTouch(uint8_t electrode) {
         
         mqttClient.publish(action->topic.c_str(), payload.c_str());
     }
-    // Tipul "INFO" nu face nimic la atingere
   }
 }

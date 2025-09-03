@@ -46,7 +46,7 @@ void Display::displayString(const char* text, int textSize, unsigned int duratio
     }
 };
 
-void drawDisplayLine(unsigned int& y_pos, const char* label, const char* state = "") {
+void Display::drawDisplayLine(unsigned int& y_pos, const char* label, const char* state) {
   int line_height = displaySensor.getFontAscent() + 2; 
 
   displaySensor.drawStr(0, y_pos, label);
@@ -60,14 +60,11 @@ void Display::menu() {
   displaySensor.clearBuffer();
   unsigned int line_y = 0;
   
-  // Găsește pagina curentă în configurație
   const Page* page = configManager.getPage(currentPage);
 
   if (page) {
-    // Afișează titlul paginii
     drawDisplayLine(line_y, page->label.c_str());
 
-    // Iterează prin liniile paginii și le afișează
     for (const auto& line : page->lines) {
         String stateStr = "";
         if (!line.entity.isEmpty()) {
@@ -82,7 +79,6 @@ void Display::menu() {
         drawDisplayLine(line_y, line.label.c_str(), stateStr.c_str());
     }
   } else {
-    // Pagina nu a fost găsită în configurație
     drawDisplayLine(line_y, "Pagina invalida:", currentPage.c_str());
   }
   

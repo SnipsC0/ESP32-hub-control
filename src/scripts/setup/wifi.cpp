@@ -3,9 +3,9 @@
 #include <Arduino.h>
 
 #include "headers/wifi.h"
-
-const char* ssid = WIFI_SSID;
-const char* password = WIFI_PSW;
+#include "headers/display.h"
+#include "headers/globals.h"
+#include "headers/helpers.h"
 
 Wifi wifi;
 
@@ -13,15 +13,43 @@ WiFiClient wifiClient;
 
 void Wifi::setup() {
   delay(10);
-  WiFi.begin(ssid, password);
-  Serial.print("Conectare la WIFI...");
+  
+  WiFiManager wm;
 
-  while(WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+  // wm.resetSettings();
+
+  // String password = generateRandomPassword(8);
+  String password = "hubparola";
+
+  WiFiManagerParameter custom_mqtt_server("server", "Server MQTT", mqtt_server, 40);
+  WiFiManagerParameter custom_mqtt_port("port", "Port MQTT", mqtt_port, 6);
+  
+  wm.addParameter(&custom_mqtt_server);
+  wm.addParameter(&custom_mqtt_port);
+  wm.setTitle("Room Hub ESP32");
+  
+  char password_display[20];
+  snprintf(password_display, sizeof(password_display), "PWD: %s", password.c_str());
+  
+  unsigned int line_y = 0;
+  display.updateScreen(line_y, true,
+    "Configureaza WiFi...", "",
+    "SSID: Room Hub ESP32", "",
+    password_display, ""
+  );
+
+  if (!wm.autoConnect("Room Hub ESP32", password.c_str())) {
+    Serial.println("Eroare la conectare, timeout.");
+    display.updateScreen(line_y, true,
+    "Eroare la conectare...", "",
+    password_display, ""
+    );
+    delay(2000);
+    ESP.restart();
+  } else {
+    Serial.println("Conectat la Wi-Fi!");
   }
 
-  Serial.println("\nConectat la WiFi!");
-  Serial.print("IP local: ");
-  Serial.println(WiFi.localIP());
+  strcpy(mqtt_server, custom_mqtt_server.getValue());
+  strcpy(mqtt_port, custom_mqtt_port.getValue());
 }

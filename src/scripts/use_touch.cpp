@@ -94,7 +94,6 @@ void setup_touch() {
 }
 
 void calibrate_touch() {
-  // Calibrare initiala
   for (uint8_t i = 0; i < 12; i++) {
     baselineValues[i] = cap.filteredData(i);
   }

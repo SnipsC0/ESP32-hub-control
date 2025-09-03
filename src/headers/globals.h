@@ -22,5 +22,9 @@ extern int OLEDpinSCL;
 
 extern char roomTemp[10];
 extern char roomHum[10];
+extern char heatIndex[10];
+
+extern char mqtt_server[40];
+extern char mqtt_port[6];
 
 #endif

@@ -6,12 +6,10 @@
 #include "headers/wifi.h"
 #include "headers/configManager.h"
 #include <ArduinoJson.h>
+#include <WiFiManager.h>
 
 Mqtt mqttClient;
 PubSubClient mqtt(wifiClient);
-
-const char* mqttServer = MQTT_IP;
-const int mqttPort = MQTT_PORT;
 
 const char* configTopic = "home/config";
 
@@ -20,23 +18,16 @@ void callback(char* topic, byte* payload, unsigned int length) {
     if (strcmp(topic, configTopic) == 0) {
 
         char payload_str[length + 1];
-    memcpy(payload_str, payload, length);
-    payload_str[length] = '\0';
-    
-    Serial.println("--- Incep parsarea configuratiei ---");
-    Serial.println(payload_str); // <-- ADAUGĂ ASTA pentru a vedea JSON-ul brut
-    
-    if (configManager.parseConfig(payload_str)) {
-        Serial.println("✅ Configuratie parsata cu SUCCES!"); // <-- ADAUGĂ ASTA
-        mqttClient.subscribeToEntities();
-        needsDisplayMenuUpdate = true;
-    } else {
-        Serial.println("❌ EROARE la parsarea configuratiei!"); // <-- ADAUGĂ ASTA
-    }
+        memcpy(payload_str, payload, length);
+        payload_str[length] = '\0';
+        
+        if (configManager.parseConfig(payload_str)) {
+            mqttClient.subscribeToEntities();
+            needsDisplayMenuUpdate = true;
+        }
         return;
     }
 
-    // Logica existentă, dar adaptată
     const EntityConfig* entityConf = configManager.getEntityConfigByTopic(topic);
     if (entityConf) {
         char payload_str[length + 1];
@@ -55,35 +46,29 @@ void callback(char* topic, byte* payload, unsigned int length) {
         for (const auto& pair : configManager.entities) {
             const EntityConfig& entityConf = pair.second;
 
-        // Verificăm dacă entitatea curentă ascultă pe topicul pe care a venit mesajul
             if (strcmp(topic, entityConf.topic.c_str()) == 0) {
             
-            // Dacă da, verificăm dacă JSON-ul conține cheia de care are nevoie
                 if (!doc[entityConf.json_key.c_str()].isNull()) {
                     String state_value = doc[entityConf.json_key.c_str()].as<String>();
                     
                     Serial.printf("Actualizare pentru entitatea '%s': noua stare este '%s'\n", entityConf.name.c_str(), state_value.c_str());
                     updateEntityState(entityConf.name.c_str(), state_value.c_str());
                     
-                    // Logica specială pentru Roborock
                     if (entityConf.name == "roborock" && state_value == "Idle") {
                         mqttClient.publish("home/roborock", "Paused");
                     }
                 }
             }
         }
-    // La final, marcăm că este necesară o actualizare a afișajului
         activeMQTT = false;
         needsDisplayMenuUpdate = true;
     }
 }
 
 void Mqtt::subscribe() {
-    // La conectare, ne abonăm întâi la topic-ul de configurare
     Serial.println("Ma abonez la topicul de configuratie...");
     mqtt.subscribe(configTopic, 1);
     
-    // Apoi, cerem configuratia
     Serial.println("Trimit cerere de configuratie...");
     mqtt.publish("home/config/request", "");
 }
@@ -111,7 +96,10 @@ void Mqtt::reconnect() {
 }
 
 void Mqtt::setup() {
-    mqtt.setServer(mqttServer, mqttPort);
+    Serial.printf("INTRA mqtt");
+    int mqtt_port_int = atoi(mqtt_port);
+
+    mqtt.setServer(mqtt_server, mqtt_port_int);
     mqtt.setBufferSize(2048);
     mqtt.setCallback(callback);
     delay(1000);
