@@ -41,9 +41,6 @@ void use_touch() {
 
     if (touchedNow && !touchedBefore) {
       if(activeButton == -1 && !needsDisplayMenuUpdate) {
-        Serial.println("Active menu: " + activeMenu);
-        Serial.println("Current Page: " + currentPage);
-        
         activeButton = i;
         
         Serial.print("Electrod "); Serial.print(i); Serial.println(" touched!");

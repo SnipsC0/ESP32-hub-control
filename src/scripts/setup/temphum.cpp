@@ -39,8 +39,9 @@ void TempHumSensor::check(){
     // Calculam indicele de caldura
     float heat_index = dht.computeHeatIndex(temperature, humidity, false);
 
-    snprintf(roomTemp, sizeof(roomTemp), "%.1f", temperature);
-    snprintf(roomHum, sizeof(roomHum), "%.1f", humidity);
+    snprintf(roomTemp, sizeof(roomTemp), "%.1f C", temperature);
+    snprintf(roomHum, sizeof(roomHum), "%.1f %%", humidity);
+
 
     // Serial.print("Umiditate: ");
     // Serial.print(humidity);
@@ -52,7 +53,7 @@ void TempHumSensor::check(){
     // Serial.print(heat_index);
     // Serial.println(" *C");
 
-    if(activeMenu && currentPage == ROOM_PAGE) {
+    if(activeMenu && currentPage == "ROOM_PAGE") {
       display.menu();
     }
   }

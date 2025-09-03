@@ -6,14 +6,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-enum MenuPage {
-  CONTROL_PAGE,
-  ROBOROCK_PAGE,
-  FORECAST_PAGE,
-  ROOM_PAGE
-};
+extern String currentPage;
 
-extern MenuPage currentPage;
 extern bool activeMenu;
 
 extern bool showingTemporary;
@@ -26,7 +20,7 @@ extern int activeButton;
 extern int OLEDpinSDA;
 extern int OLEDpinSCL;
 
-extern char roomTemp[5];
-extern char roomHum[5];
+extern char roomTemp[10];
+extern char roomHum[10];
 
 #endif

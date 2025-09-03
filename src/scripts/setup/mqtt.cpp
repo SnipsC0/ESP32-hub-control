@@ -4,6 +4,7 @@
 #include "headers/states.h"
 #include "headers/mqtt.h"
 #include "headers/wifi.h"
+#include "headers/configManager.h"
 #include <ArduinoJson.h>
 
 Mqtt mqttClient;
@@ -12,20 +13,36 @@ PubSubClient mqtt(wifiClient);
 const char* mqttServer = MQTT_IP;
 const int mqttPort = MQTT_PORT;
 
-// Functie pentru a gestiona cazurile speciale (logica aditionala)
-void handleSpecialCases(Entity entity, const char* payload) {
-    if (entity == Entity::roborock && strcmp(payload, "Idle") == 0) {
-        mqttClient.publish("home/roborock", "Paused");
-    }
-}
+const char* configTopic = "home/config";
 
 void callback(char* topic, byte* payload, unsigned int length) {
-    if (length > 0) {
+    Serial.printf("Mesaj primit pe topicul: %s\n", topic);
+    if (strcmp(topic, configTopic) == 0) {
+
+        char payload_str[length + 1];
+    memcpy(payload_str, payload, length);
+    payload_str[length] = '\0';
+    
+    Serial.println("--- Incep parsarea configuratiei ---");
+    Serial.println(payload_str); // <-- ADAUGĂ ASTA pentru a vedea JSON-ul brut
+    
+    if (configManager.parseConfig(payload_str)) {
+        Serial.println("✅ Configuratie parsata cu SUCCES!"); // <-- ADAUGĂ ASTA
+        mqttClient.subscribeToEntities();
+        needsDisplayMenuUpdate = true;
+    } else {
+        Serial.println("❌ EROARE la parsarea configuratiei!"); // <-- ADAUGĂ ASTA
+    }
+        return;
+    }
+
+    // Logica existentă, dar adaptată
+    const EntityConfig* entityConf = configManager.getEntityConfigByTopic(topic);
+    if (entityConf) {
         char payload_str[length + 1];
         memcpy(payload_str, payload, length);
         payload_str[length] = '\0';
 
-        // Corectare avertisment: utilizare JsonDocument
         JsonDocument doc;
         DeserializationError error = deserializeJson(doc, payload_str);
         
@@ -35,30 +52,47 @@ void callback(char* topic, byte* payload, unsigned int length) {
             return;
         }
         
-        // Iteram prin toate entitatile pentru a le actualiza starea
-        for (const auto& [entity, config] : entityConfigs) {
-            if (strcmp(topic, config.topic) == 0) {
-                if (doc[config.json_key].is<JsonVariant>()) {
-                    std::string state_value = doc[config.json_key].as<std::string>();
-                    // Serial.println(state_value.c_str());
-                    Serial.println("Ajuns");
-                    updateEntityState(entity, state_value.c_str());
-                
-                    handleSpecialCases(entity, state_value.c_str());
-                    activeMQTT = false;
-                    needsDisplayMenuUpdate = true;
+        for (const auto& pair : configManager.entities) {
+            const EntityConfig& entityConf = pair.second;
+
+        // Verificăm dacă entitatea curentă ascultă pe topicul pe care a venit mesajul
+            if (strcmp(topic, entityConf.topic.c_str()) == 0) {
+            
+            // Dacă da, verificăm dacă JSON-ul conține cheia de care are nevoie
+                if (!doc[entityConf.json_key.c_str()].isNull()) {
+                    String state_value = doc[entityConf.json_key.c_str()].as<String>();
+                    
+                    Serial.printf("Actualizare pentru entitatea '%s': noua stare este '%s'\n", entityConf.name.c_str(), state_value.c_str());
+                    updateEntityState(entityConf.name.c_str(), state_value.c_str());
+                    
+                    // Logica specială pentru Roborock
+                    if (entityConf.name == "roborock" && state_value == "Idle") {
+                        mqttClient.publish("home/roborock", "Paused");
+                    }
                 }
             }
         }
+    // La final, marcăm că este necesară o actualizare a afișajului
+        activeMQTT = false;
+        needsDisplayMenuUpdate = true;
     }
 }
 
 void Mqtt::subscribe() {
-    for (auto const& [entity, config] : entityConfigs) {
-        mqtt.subscribe(config.topic, 1);
+    // La conectare, ne abonăm întâi la topic-ul de configurare
+    Serial.println("Ma abonez la topicul de configuratie...");
+    mqtt.subscribe(configTopic, 1);
+    
+    // Apoi, cerem configuratia
+    Serial.println("Trimit cerere de configuratie...");
+    mqtt.publish("home/config/request", "");
+}
+
+void Mqtt::subscribeToEntities() {
+    for (auto const& [name, config] : configManager.entities) {
+        mqtt.subscribe(config.topic.c_str(), 1);
     }
     mqtt.publish("home/states", "");
-    mqtt.publish("home/weather/state", "");
 }
 
 void Mqtt::reconnect() {
@@ -78,8 +112,9 @@ void Mqtt::reconnect() {
 
 void Mqtt::setup() {
     mqtt.setServer(mqttServer, mqttPort);
-    delay(1000);
+    mqtt.setBufferSize(2048);
     mqtt.setCallback(callback);
+    delay(1000);
 }
 
 void Mqtt::loop() {

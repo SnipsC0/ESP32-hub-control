@@ -1,11 +1,11 @@
 #include <WiFi.h>
+#include <WiFiManager.h>
 #include <Arduino.h>
 
 #include "headers/wifi.h"
 
 const char* ssid = WIFI_SSID;
 const char* password = WIFI_PSW;
-
 
 Wifi wifi;
 

@@ -1,25 +1,17 @@
 #include "headers/states.h"
-#include <map>
 #include <string>
+#include <map>
 
-// Aici se defineste variabila globala 'states'
-std::map<Entity, std::string> states;
+// Harta de stări. Cheia este numele entității (ex: "tapo_0")
+std::map<std::string, std::string> states;
 
-// Aici se definesc functiile 'updateEntityState' si 'getEntityState'
-void updateEntityState(Entity entity, const char* newState) {
-    states[entity] = newState;
+void updateEntityState(const char* entityName, const char* newState) {
+    states[entityName] = newState;
 }
 
-const char* getEntityState(Entity entity) {
-    if (states.find(entity) != states.end()) {
-        return states[entity].c_str();
+const char* getEntityState(const char* entityName) {
+    if (states.count(entityName)) {
+        return states[entityName].c_str();
     }
-    return "";
+    return "N/A"; // Returnam un text implicit
 }
-
-// Aici se defineste si harta de configurare
-#define X_ENTITY(name, topic, json_key) {Entity::name, {topic, json_key}},
-const std::map<Entity, EntityConfig> entityConfigs = {
-    ENTITY_LIST
-};
-#undef X_ENTITY

@@ -3,25 +3,10 @@
 
 #include <map>
 #include <string>
-#include "headers/config.h"
 
-// Structura EntityConfig contine topic-ul si cheia JSON
-struct EntityConfig {
-    const char* topic;
-    const char* json_key;
-};
+extern std::map<std::string, std::string> states;
 
-// Define the enum using the macro
-#define X_ENTITY(name, topic, json_key) name,
-enum class Entity {
-    ENTITY_LIST
-};
-#undef X_ENTITY
-
-extern std::map<Entity, std::string> states;
-extern const std::map<Entity, EntityConfig> entityConfigs;
-
-void updateEntityState(Entity entity, const char* newState);
-const char* getEntityState(Entity entity);
+void updateEntityState(const char* entityName, const char* newState);
+const char* getEntityState(const char* entityName);
 
 #endif

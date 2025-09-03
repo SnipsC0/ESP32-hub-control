@@ -4,6 +4,7 @@
 #include "headers/states.h"
 #include "headers/globals.h"
 #include "headers/config.h"
+#include "headers/configManager.h"
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
@@ -57,49 +58,42 @@ void drawDisplayLine(unsigned int& y_pos, const char* label, const char* state =
 
 void Display::menu() {
   displaySensor.clearBuffer();
-  
   unsigned int line_y = 0;
   
-  switch (currentPage)
-  {
-    case CONTROL_PAGE: {
-      const char* tapoState = getEntityState(Entity::tapo_0);
-      const char* roborockState = getEntityState(Entity::roborock);
-      
-      drawDisplayLine(line_y, "PAGINA CONTROL");
-      drawDisplayLine(line_y, "1.Priza:", tapoState);
-      drawDisplayLine(line_y, "2.Aspirator:", roborockState);
-      break;
+  // Găsește pagina curentă în configurație
+  const Page* page = configManager.getPage(currentPage);
+
+  if (page) {
+    // Afișează titlul paginii
+    drawDisplayLine(line_y, page->label.c_str());
+
+    // Iterează prin liniile paginii și le afișează
+    for (const auto& line : page->lines) {
+        String stateStr = "";
+        if (!line.entity.isEmpty()) {
+            stateStr = getEntityState(line.entity.c_str());
+        } 
+        else if (line.variable == "roomTemp") {
+            stateStr = roomTemp;
+        } else if (line.variable == "roomHum") {
+            stateStr = roomHum;
+        }
+        
+        drawDisplayLine(line_y, line.label.c_str(), stateStr.c_str());
     }
-    case ROBOROCK_PAGE: {     
-      drawDisplayLine(line_y, "1.Cleaning");
-      drawDisplayLine(line_y, "2.Docking");
-      drawDisplayLine(line_y, "3.Pause");
-      drawDisplayLine(line_y, " ");
-      drawDisplayLine(line_y, "4.Cancel");
-      break;
-    }
-    case FORECAST_PAGE: {
-      drawDisplayLine(line_y, "VREMEA AFARA");
-      drawDisplayLine(line_y, "1.Vreme:", getEntityState(Entity::weather_temp));
-      drawDisplayLine(line_y, "2.Humidity:", getEntityState(Entity::weather_hum));
-      break;
-    }
-    case ROOM_PAGE: {
-      drawDisplayLine(line_y, "STARE CAMERA");
-      drawDisplayLine(line_y, "1.Temperatura:", roomTemp);
-      drawDisplayLine(line_y, "2.Humiditate:", roomHum);
-      break;
-    }
-    default:
-    break;
+  } else {
+    // Pagina nu a fost găsită în configurație
+    drawDisplayLine(line_y, "Pagina invalida:", currentPage.c_str());
   }
   
   activeMenu = true;
-  displayStartTime = millis();
-  lastDisplayTime = millis();
+  if(currentPage != "ROOM_PAGE") {
+    displayStartTime = millis();
+    lastDisplayTime = millis();
+  };
   displaySensor.sendBuffer();
 }
+
 
 void Display::manageDisplayState() {
   if (showingTemporary && millis() - displayStartTime > defaultDuration) {

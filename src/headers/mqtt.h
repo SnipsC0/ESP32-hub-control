@@ -8,6 +8,7 @@ class Mqtt {
   public:
     void setup();
     void loop();
+    void subscribeToEntities();
     void publish(const char *topic, const char *payload);
   private:
     void subscribe();
