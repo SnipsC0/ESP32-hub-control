@@ -14,7 +14,6 @@ PubSubClient mqtt(wifiClient);
 const char* configTopic = "home/config";
 
 void callback(char* topic, byte* payload, unsigned int length) {
-    Serial.printf("Mesaj primit pe topicul: %s\n", topic);
     if (strcmp(topic, configTopic) == 0) {
 
         char payload_str[length + 1];
@@ -22,6 +21,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
         payload_str[length] = '\0';
         
         if (configManager.parseConfig(payload_str)) {
+            Serial.println();
             mqttClient.subscribeToEntities();
             needsDisplayMenuUpdate = true;
         }
@@ -51,7 +51,6 @@ void callback(char* topic, byte* payload, unsigned int length) {
                 if (!doc[entityConf.json_key.c_str()].isNull()) {
                     String state_value = doc[entityConf.json_key.c_str()].as<String>();
                     
-                    Serial.printf("Actualizare pentru entitatea '%s': noua stare este '%s'\n", entityConf.name.c_str(), state_value.c_str());
                     updateEntityState(entityConf.name.c_str(), state_value.c_str());
                     
                     if (entityConf.name == "roborock" && state_value == "Idle") {
@@ -96,7 +95,6 @@ void Mqtt::reconnect() {
 }
 
 void Mqtt::setup() {
-    Serial.printf("INTRA mqtt");
     int mqtt_port_int = atoi(mqtt_port);
 
     mqtt.setServer(mqtt_server, mqtt_port_int);

@@ -20,7 +20,6 @@ public:
   }
 
 private:
-  static unsigned long lastDisplayTime;
   static unsigned long displayStartTime;
   static unsigned long currentDuration;
 

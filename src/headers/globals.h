@@ -14,6 +14,7 @@ extern bool showingTemporary;
 extern bool needsDisplayMenuUpdate;
 extern bool activeMQTT;
 
+extern unsigned long lastDisplayTime;
 extern unsigned long lastTouchTime;
 extern int activeButton;
 
@@ -23,6 +24,9 @@ extern int OLEDpinSCL;
 extern char roomTemp[10];
 extern char roomHum[10];
 extern char heatIndex[10];
+extern float rawHumidity;
+
+extern bool activeDehumidifier;
 
 extern char mqtt_server[40];
 extern char mqtt_port[6];

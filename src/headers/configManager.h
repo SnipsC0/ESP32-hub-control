@@ -19,10 +19,18 @@ struct ActionLine {
     bool showState;
 };
 
+struct DehumidifierConfig {
+    bool enabled;
+    String entity;
+    int threshold;
+    String command_topic;
+};
+
 struct Page {
     String name;
     String label;
     std::vector<ActionLine> lines;
+    DehumidifierConfig dehumidifier;
 };
 
 struct EntityConfig {

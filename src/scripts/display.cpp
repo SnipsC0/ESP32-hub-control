@@ -20,8 +20,6 @@ const unsigned long defaultDuration = TOUCH_COOLDOWN_S * 1000;
 unsigned long Display::displayStartTime = 0;
 unsigned long Display::currentDuration = defaultDuration;
 
-unsigned long Display::lastDisplayTime = 0;
-
 void Display::init() {
   Wire.begin(OLED_PIN_SDA, OLED_PIN_SCL);
 

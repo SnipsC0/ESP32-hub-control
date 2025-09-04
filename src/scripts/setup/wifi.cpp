@@ -19,13 +19,13 @@ void connectFailedCallback() {
 }
 
 void Wifi::setup() {
-  delay(10);
+  delay(2000);
   
   WiFiManager wm;
 
-  wm.resetSettings();
+  // wm.resetSettings();
 
-  String password = generateRandomPassword(8);
+  // String password = generateRa1ndomPassword(8);
   String password = "hubparola";
 
   WiFiManagerParameter custom_mqtt_server("server", "HomeAssistant MQTT", mqtt_server, 40);

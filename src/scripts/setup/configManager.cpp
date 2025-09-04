@@ -52,6 +52,26 @@ bool ConfigManager::parseConfig(const char* json) {
 
             newPage.lines.push_back(newLine);
         }
+        
+        if (!pageObj["dehumidifier"].isNull()) {
+            JsonObject dehumidifierObj = pageObj["dehumidifier"];
+            if (dehumidifierObj["enabled"].is<bool>()) {
+                newPage.dehumidifier.enabled = dehumidifierObj["enabled"].as<bool>();
+            } else if (dehumidifierObj["enabled"].is<const char*>() && strcmp(dehumidifierObj["enabled"], "true") == 0) {
+                newPage.dehumidifier.enabled = true;
+            } else {
+                newPage.dehumidifier.enabled = false;
+            }
+            newPage.dehumidifier.entity = dehumidifierObj["entity"].as<String>();
+            newPage.dehumidifier.threshold = dehumidifierObj["threshold"].as<int>();
+
+            if (!dehumidifierObj["command_topic"].isNull()) {
+                newPage.dehumidifier.command_topic = dehumidifierObj["command_topic"].as<String>();
+            }
+        } else {
+            newPage.dehumidifier.enabled = false;
+        }
+
         pages.push_back(newPage);
     }
     

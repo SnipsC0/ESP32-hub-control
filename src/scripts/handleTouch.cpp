@@ -8,6 +8,8 @@
 
 void handleTouch(uint8_t electrode) {
   setPinState(2, true);
+  lastTouchTime = millis();
+  lastDisplayTime = millis();
 
   if(!activeMenu) {
     display.menu();
@@ -41,6 +43,7 @@ void handleTouch(uint8_t electrode) {
     } else if(action->type == "RESTART") {
       unsigned int line_y = 0;
       display.updateScreen(line_y, true, "Repornire...", "");
+      setPinState(2, LOW);
       delay(2000);
       ESP.restart();
     }
